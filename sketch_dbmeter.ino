@@ -2,12 +2,10 @@
 #include <Adafruit_GFX.h>
 #include <Max72xxPanel.h>
 #include <MD_MAX72xx.h>
+#include <ESP8266WiFi.h>
 
-const double dBAnalogQuiet = 17; // envelope - calibrated value from analog input (48 dB equivalent)
-const double dBAnalogModerate = 30;
-const double dBAnalogLoud = 40;
 int count;
-
+String ChipIdString;
 unsigned int maxPeakToPeak = 0;   // peak-to-peak level
 unsigned long previousMillis = 0;  
 int8_t graph[32];
@@ -45,6 +43,8 @@ void setup()
   matrix.setPosition(3, 0, 0); // And the last display is at <3, 0>
   pinMode(A0, INPUT);
   count = 0;
+  ChipIdString = String(ESP.getChipId());
+  Serial.println(ChipIdString);
 }
 //////////////////////////////////////////////////////////////////////////////////////////
 //                                   print text                           //
@@ -105,7 +105,7 @@ unsigned int getNoise()
 //    server.handleClient();                        // checks for incoming messages
 //    ArduinoOTA.handle();  
 
-   //  Serial.println(signalMax);
+    // Serial.println(sample);
     if (sample < 1023 )  // toss out spurious readings
     {
       if (sample > signalMax)
@@ -130,7 +130,7 @@ maxPeakToPeak -=3;
     maxPeakToPeak = 7;
   }
 
-  Serial.println(String(maxPeakToPeak));
+ // Serial.println(String(maxPeakToPeak));
   return  maxPeakToPeak;
 }
 unsigned int getSimpleNoise()
@@ -148,7 +148,7 @@ unsigned int getSimpleNoise()
   while ((millis() - startMillis < sampleWindow))
   {
     sample = analogRead(PIN_ANALOG_IN);
- Serial.println(String(sample));
+ //Serial.println(String(sample));
      if (sample > signalMax)
       {
         signalMax = sample;  // save just the max levels
@@ -157,7 +157,7 @@ unsigned int getSimpleNoise()
      count++;
   }
  
-  Serial.println(String(count));
+  //Serial.println(String(count));
   return  signalMax;
 }
 void loop() 
@@ -170,13 +170,14 @@ void loop()
   
   // Check the envelope input
   
-  //value = analogRead(PIN_ANALOG_IN);
-  value =getNoise();  
+  value = analogRead(PIN_ANALOG_IN);
+  //value =getNoise();  
  
 // graph[pos] = (log10((float)maxPeakToPeak/20.0)+1)*7;
  graph[pos] = maxPeakToPeak;
   
-  Serial.println(((float)maxPeakToPeak/100.0));  
+ /** 
+ Serial.println(((float)maxPeakToPeak/100.0));  
   Serial.println(log10((float)maxPeakToPeak/100.0));
      Serial.print("maxPeakToPeak. Value: ");
     Serial.print( graph[pos]);
@@ -185,7 +186,9 @@ void loop()
     Serial.print(pos);
     Serial.print("  ");
      Serial.println("");
+    */
  maxPeakToPeak = 0;
+/** print vumeter
  matrix.fillScreen(LOW);
 
 
@@ -210,9 +213,10 @@ void loop()
       matrix.setRotation(2, 3);
       matrix.setRotation(3, 3);  
      matrix.write();
+  */
+  //PrintLineNoScroll(ChipIdString);
+  PrintLineNoScroll((String)value);
   
-  //PrintLineNoScroll((String)value);
-
 
  /*   for ( int x = 0; x < matrix.width() - 1; x++ ) {
     matrix.fillScreen(LOW);
@@ -229,24 +233,8 @@ void loop()
   else {
     pos++;
   }
-  delay(100);
+  delay(1000);
 }
-
-
-float calculateDecibels(int x, char c)
-{
-  float decibelsCalculated;
-  
-    if (c == 'q')
-      decibelsCalculated = 20 * log10(x/dBAnalogQuiet);
-    if (c == 'm')
-      decibelsCalculated = 20 * log10(x/dBAnalogModerate);
-    if (c == 'l')
-      decibelsCalculated = 20 * log10(x/dBAnalogLoud);  
-  
-  return (decibelsCalculated);
-}
-
 
 
 
