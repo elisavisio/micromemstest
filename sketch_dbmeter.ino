@@ -16,6 +16,15 @@ uint8_t i, col, pos = 0;
 #define PIN_ANALOG_IN A0
 
 /////////////////////////////////////////////////////////////////////////// Display config
+/*
+  -->Matrix 4 modul:
+  .CLK -> D5 (14)
+  .CS  -> D3 (0)
+  .DIN-> D7 (13)
+  .GND-> GND
+  .VCC-> 3.3V
+
+  */
 #define  MAX_DEVICES 4
 
 #define  CLK_PIN   14
@@ -216,7 +225,7 @@ void loop()
   */
   //PrintLineNoScroll(ChipIdString);
   PrintLineNoScroll((String)value);
-  
+    Serial.println((String)value);
 
  /*   for ( int x = 0; x < matrix.width() - 1; x++ ) {
     matrix.fillScreen(LOW);
@@ -235,6 +244,4 @@ void loop()
   }
   delay(1000);
 }
-
-
 
