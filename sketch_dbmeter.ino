@@ -3,6 +3,7 @@
 #include <Max72xxPanel.h>
 #include <MD_MAX72xx.h>
 #include <ESP8266WiFi.h>
+#include "DHT.h"
 
 int count;
 String ChipIdString;
@@ -14,6 +15,11 @@ uint8_t i, col, pos = 0;
 
 // replace with your WiFi connection info
 #define PIN_ANALOG_IN A0
+
+#define DHTPIN D4
+
+#define DHTTYPE DHT22   // DHT 22  (AM2302), AM2321
+DHT dht(DHTPIN, DHTTYPE);
 
 /////////////////////////////////////////////////////////////////////////// Display config
 /*
@@ -27,9 +33,9 @@ uint8_t i, col, pos = 0;
   */
 #define  MAX_DEVICES 4
 
-#define  CLK_PIN   14
-#define DATA_PIN  13
-#define CS_PIN    0
+#define  CLK_PIN   D5
+#define DATA_PIN  D7
+#define CS_PIN    D3
 
 MD_MAX72XX mx = MD_MAX72XX(CS_PIN, MAX_DEVICES);                      // SPI hardware interface
 
@@ -45,7 +51,7 @@ void setup()
 {
   Serial.begin(115200);
 
-  matrix.setIntensity(4); // Use a value between 0 and 15 for brightness
+  matrix.setIntensity(9); // Use a value between 0 and 15 for brightness
   matrix.setPosition(0, 3, 0); // The first display is at <0, 7>
   matrix.setPosition(1, 2, 0); // The second display is at <1, 0>
   matrix.setPosition(2, 1, 0); // The third display is at <2, 0>
@@ -176,6 +182,8 @@ void loop()
   float decibelsValueModerate = 65;
   float decibelsValueLoud = 70;
   float valueDb;
+    //read dht (with value filter)
+  float moisture = 0, temperature = 0;
   
   // Check the envelope input
   
@@ -226,7 +234,16 @@ void loop()
   //PrintLineNoScroll(ChipIdString);
   PrintLineNoScroll((String)value);
     Serial.println((String)value);
-
+    delay(3000);
+     moisture = dht.readHumidity();
+    moisture = (isnan(moisture)) ? 99 : moisture;
+      PrintLineNoScroll((String)moisture);
+    Serial.println((String)moisture);
+delay(3000);
+    temperature = dht.readTemperature();
+    temperature = (isnan(temperature)) ? 99 : temperature;
+      PrintLineNoScroll((String)temperature);
+    Serial.println((String)temperature);
  /*   for ( int x = 0; x < matrix.width() - 1; x++ ) {
     matrix.fillScreen(LOW);
     matrix.drawLine(31, 0, 31 , 3, HIGH); //X1,Y1,X2,Y2
@@ -242,6 +259,6 @@ void loop()
   else {
     pos++;
   }
-  delay(1000);
+  delay(3000);
 }
 
